@@ -1,0 +1,5 @@
+no-uninitialized-bbox.patch
+enable-subpixel-rendering.patch
+enable-gxvalid-otvalid.patch
+verbose-libtool.patch
+freetype-config-multi-arch.patch

@@ -1,0 +1,79 @@
+Description: Patch freetype-config to enable multi-arch installation
+ (1) Remove the arch-dependent output of `freetype-config --libs`.
+ (2) Exit with an error if freetype-config is called with --libtool.
+     This option is deprecated in Debian.
+Author: Hugh McMaster <hugh.mcmaster@outlook.com>
+
+Index: freetype-2.8.1/builds/unix/freetype-config.in
+===================================================================
+--- freetype-2.8.1.orig/builds/unix/freetype-config.in
++++ freetype-2.8.1/builds/unix/freetype-config.in
+@@ -39,27 +39,20 @@ else
+   exec_prefix="%exec_prefix%"
+ 
+   includedir="%includedir%"
+-  libdir="%libdir%"
+ 
+   version=%ft_version%
+ 
+   cflags="-I${SYSROOT}$includedir/freetype2"
+   dynamic_libs="-lfreetype"
+   static_libs="%LIBSSTATIC_CONFIG%"
+-  if test "${SYSROOT}$libdir" != "/usr/lib"   &&
+-     test "${SYSROOT}$libdir" != "/usr/lib64" ; then
+-    libs_L="-L${SYSROOT}$libdir"
+-  fi
+ fi
+ 
+ orig_prefix=$prefix
+ orig_exec_prefix=$exec_prefix
+ 
+ orig_includedir=$includedir
+-orig_libdir=$libdir
+ 
+ include_suffix=`echo $includedir | sed "s|$prefix||"`
+-lib_suffix=`echo $libdir | sed "s|$exec_prefix||"`
+ 
+ 
+ usage()
+@@ -134,7 +127,8 @@ while test $# -gt 0 ; do
+     echo_libs=yes
+     ;;
+   --libtool)
+-    echo_libtool=yes
++    echo 2>&1 "The use of libfreetype6.la is deprecated in Debian."
++    exit 1
+     ;;
+   --static)
+     show_static=yes
+@@ -158,11 +152,6 @@ fi
+ 
+ if test "$local_prefix" = "yes" ; then
+   includedir=${prefix}${include_suffix}
+-  if test "$exec_prefix_set" = "yes" ; then
+-    libdir=${exec_prefix}${lib_suffix}
+-  else
+-    libdir=${prefix}${lib_suffix}
+-  fi
+ fi
+ 
+ 
+@@ -197,15 +186,11 @@ fi
+ 
+ if test "$echo_libs" = "yes" ; then
+   if test "$show_static" = "yes" ; then
+-    libs="$libs_L $static_libs"
++    libs="$static_libs"
+   else
+-    libs="$libs_L $dynamic_libs"
++    libs="$dynamic_libs"
+   fi
+-  echo $libs | sed "s|$orig_libdir|$libdir|"
+-fi
+-
+-if test "$echo_libtool" = "yes" ; then
+-  echo ${SYSROOT}$libdir/libfreetype.la
++  echo $libs
+ fi
+ 
+ # EOF
